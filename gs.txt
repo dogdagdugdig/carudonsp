@@ -1,0 +1,282 @@
+// Google Apps Script สำหรับระบบขอใช้รถยนต์
+// ติดตั้ง: สร้าง Apps Script ใหม่ แล้ว Deploy เป็น Web App
+
+const SHEET_ID = '17VvL2FMHK2fBcYX2QcY_LhO9n0ps-UNlLOyfhwjaPvY';
+
+function doGet(e) {
+  const action = e.parameter.action;
+  const sheetId = e.parameter.sheetId || SHEET_ID;
+  
+  if (action === 'getData') {
+    return getData(sheetId);
+  }
+  
+  return ContentService.createTextOutput(JSON.stringify({ success: false, error: 'Invalid action' }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function doPost(e) {
+  try {
+    const data = JSON.parse(e.postData.contents);
+    const action = data.action;
+    const sheetId = data.sheetId || SHEET_ID;
+    
+    switch(action) {
+      case 'addBooking':
+        return addBooking(sheetId, data);
+      case 'updateBooking':
+        return updateBooking(sheetId, data);
+      case 'updateStatus':
+        return updateStatus(sheetId, data);
+      case 'deleteBooking':
+        return deleteBooking(sheetId, data);
+      case 'addSatisfaction':
+        return addSatisfaction(sheetId, data);
+      default:
+        return ContentService.createTextOutput(JSON.stringify({ success: false, error: 'Invalid action' }))
+          .setMimeType(ContentService.MimeType.JSON);
+    }
+  } catch (error) {
+    return ContentService.createTextOutput(JSON.stringify({ success: false, error: error.toString() }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function getData(sheetId) {
+  try {
+    const ss = SpreadsheetApp.openById(sheetId);
+    let bookingsSheet = ss.getSheetByName('Bookings');
+    
+    // สร้าง Sheet ถ้ายังไม่มี
+    if (!bookingsSheet) {
+      bookingsSheet = ss.insertSheet('Bookings');
+      bookingsSheet.appendRow([
+        'ชื่อ-สกุล', 'ตำแหน่ง', 'เบอร์โทรศัพท์', 'จำนวนผู้โดยสาร', 
+        'วัตถุประสงค์/สถานที่ไป', 'รถยนต์', 'พนักงานขับรถ', 
+        'วันที่เริ่มต้น', 'เวลาเริ่มต้น', 'วันที่สิ้นสุด', 'เวลาสิ้นสุด', 
+        'เลขไมล์', 'สถานะ', 'Timestamp'
+      ]);
+      
+      // ตั้งค่าหัวตาราง
+      const headerRange = bookingsSheet.getRange(1, 1, 1, 14);
+      headerRange.setBackground('#667eea');
+      headerRange.setFontColor('#ffffff');
+      headerRange.setFontWeight('bold');
+      headerRange.setHorizontalAlignment('center');
+      bookingsSheet.setFrozenRows(1);
+    }
+    
+    const lastRow = bookingsSheet.getLastRow();
+    let bookings = [];
+    
+    if (lastRow > 1) {
+      const data = bookingsSheet.getRange(2, 1, lastRow - 1, 14).getValues();
+      bookings = data.map((row, index) => ({
+        rowIndex: index + 2,
+        name: row[0],
+        position: row[1],
+        phone: row[2],
+        passengers: row[3],
+        destination: row[4],
+        car: row[5],
+        driver: row[6],
+        startDate: formatDateForOutput(row[7]),
+        startTime: row[8],
+        endDate: formatDateForOutput(row[9]),
+        endTime: row[10],
+        mileage: row[11],
+        status: row[12] || 'รอการอนุมัติ',
+        timestamp: row[13]
+      }));
+    }
+    
+    return ContentService.createTextOutput(JSON.stringify({ 
+      success: true, 
+      bookings: bookings 
+    })).setMimeType(ContentService.MimeType.JSON);
+    
+  } catch (error) {
+    return ContentService.createTextOutput(JSON.stringify({ 
+      success: false, 
+      error: error.toString(),
+      bookings: []
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function formatDateForOutput(date) {
+  if (!date) return '';
+  if (date instanceof Date) {
+    return Utilities.formatDate(date, Session.getScriptTimeZone(), 'yyyy-MM-dd');
+  }
+  return date.toString();
+}
+
+function addBooking(sheetId, data) {
+  try {
+    const ss = SpreadsheetApp.openById(sheetId);
+    let bookingsSheet = ss.getSheetByName('Bookings');
+    
+    // สร้าง Sheet ถ้ายังไม่มี
+    if (!bookingsSheet) {
+      bookingsSheet = ss.insertSheet('Bookings');
+      bookingsSheet.appendRow([
+        'ชื่อ-สกุล', 'ตำแหน่ง', 'เบอร์โทรศัพท์', 'จำนวนผู้โดยสาร', 
+        'วัตถุประสงค์/สถานที่ไป', 'รถยนต์', 'พนักงานขับรถ', 
+        'วันที่เริ่มต้น', 'เวลาเริ่มต้น', 'วันที่สิ้นสุด', 'เวลาสิ้นสุด', 
+        'เลขไมล์', 'สถานะ', 'Timestamp'
+      ]);
+      
+      const headerRange = bookingsSheet.getRange(1, 1, 1, 14);
+      headerRange.setBackground('#667eea');
+      headerRange.setFontColor('#ffffff');
+      headerRange.setFontWeight('bold');
+      headerRange.setHorizontalAlignment('center');
+      bookingsSheet.setFrozenRows(1);
+    }
+    
+    bookingsSheet.appendRow([
+      data.name,
+      data.position,
+      data.phone,
+      data.passengers,
+      data.destination,
+      data.car,
+      data.driver,
+      data.startDate,
+      data.startTime,
+      data.endDate,
+      data.endTime,
+      data.mileage,
+      data.status || 'รอการอนุมัติ',
+      new Date().toISOString()
+    ]);
+    
+    return ContentService.createTextOutput(JSON.stringify({ success: true }))
+      .setMimeType(ContentService.MimeType.JSON);
+      
+  } catch (error) {
+    return ContentService.createTextOutput(JSON.stringify({ success: false, error: error.toString() }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function updateBooking(sheetId, data) {
+  try {
+    const ss = SpreadsheetApp.openById(sheetId);
+    const bookingsSheet = ss.getSheetByName('Bookings');
+    
+    if (!bookingsSheet) {
+      return ContentService.createTextOutput(JSON.stringify({ success: false, error: 'Sheet not found' }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    const rowIndex = parseInt(data.rowIndex);
+    
+    bookingsSheet.getRange(rowIndex, 1).setValue(data.name);
+    bookingsSheet.getRange(rowIndex, 2).setValue(data.position);
+    bookingsSheet.getRange(rowIndex, 3).setValue(data.phone);
+    bookingsSheet.getRange(rowIndex, 4).setValue(data.passengers);
+    bookingsSheet.getRange(rowIndex, 5).setValue(data.destination);
+    bookingsSheet.getRange(rowIndex, 6).setValue(data.car);
+    bookingsSheet.getRange(rowIndex, 7).setValue(data.driver);
+    bookingsSheet.getRange(rowIndex, 8).setValue(data.startDate);
+    bookingsSheet.getRange(rowIndex, 9).setValue(data.startTime);
+    bookingsSheet.getRange(rowIndex, 10).setValue(data.endDate);
+    bookingsSheet.getRange(rowIndex, 11).setValue(data.endTime);
+    bookingsSheet.getRange(rowIndex, 12).setValue(data.mileage);
+    
+    return ContentService.createTextOutput(JSON.stringify({ success: true }))
+      .setMimeType(ContentService.MimeType.JSON);
+      
+  } catch (error) {
+    return ContentService.createTextOutput(JSON.stringify({ success: false, error: error.toString() }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function updateStatus(sheetId, data) {
+  try {
+    const ss = SpreadsheetApp.openById(sheetId);
+    const bookingsSheet = ss.getSheetByName('Bookings');
+    
+    if (!bookingsSheet) {
+      return ContentService.createTextOutput(JSON.stringify({ success: false, error: 'Sheet not found' }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    const rowIndex = parseInt(data.rowIndex);
+    bookingsSheet.getRange(rowIndex, 13).setValue(data.status);
+    
+    return ContentService.createTextOutput(JSON.stringify({ success: true }))
+      .setMimeType(ContentService.MimeType.JSON);
+      
+  } catch (error) {
+    return ContentService.createTextOutput(JSON.stringify({ success: false, error: error.toString() }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function deleteBooking(sheetId, data) {
+  try {
+    const ss = SpreadsheetApp.openById(sheetId);
+    const bookingsSheet = ss.getSheetByName('Bookings');
+    
+    if (!bookingsSheet) {
+      return ContentService.createTextOutput(JSON.stringify({ success: false, error: 'Sheet not found' }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    const rowIndex = parseInt(data.rowIndex);
+    bookingsSheet.deleteRow(rowIndex);
+    
+    return ContentService.createTextOutput(JSON.stringify({ success: true }))
+      .setMimeType(ContentService.MimeType.JSON);
+      
+  } catch (error) {
+    return ContentService.createTextOutput(JSON.stringify({ success: false, error: error.toString() }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function addSatisfaction(sheetId, data) {
+  try {
+    const ss = SpreadsheetApp.openById(sheetId);
+    let satisfactionSheet = ss.getSheetByName('Satisfaction');
+    
+    // สร้าง Sheet ถ้ายังไม่มี
+    if (!satisfactionSheet) {
+      satisfactionSheet = ss.insertSheet('Satisfaction');
+      satisfactionSheet.appendRow([
+        'ชื่อ-สกุล', 'ระดับความพึงพอใจ', 'ข้อเสนอแนะ', 'Timestamp'
+      ]);
+      
+      const headerRange = satisfactionSheet.getRange(1, 1, 1, 4);
+      headerRange.setBackground('#ec4899');
+      headerRange.setFontColor('#ffffff');
+      headerRange.setFontWeight('bold');
+      headerRange.setHorizontalAlignment('center');
+      satisfactionSheet.setFrozenRows(1);
+    }
+    
+    satisfactionSheet.appendRow([
+      data.name,
+      data.rating,
+      data.comment || '',
+      new Date().toISOString()
+    ]);
+    
+    return ContentService.createTextOutput(JSON.stringify({ success: true }))
+      .setMimeType(ContentService.MimeType.JSON);
+      
+  } catch (error) {
+    return ContentService.createTextOutput(JSON.stringify({ success: false, error: error.toString() }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+// ฟังก์ชันสำหรับทดสอบ
+function testGetData() {
+  const result = getData(SHEET_ID);
+  Logger.log(result.getContent());
+}
