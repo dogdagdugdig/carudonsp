@@ -149,7 +149,7 @@
     </div>
    </main><!-- Footer -->
    <footer class="gradient-header text-white text-center py-4 mt-8">
-    <p class="font-kanit text-sm">@2026 | งานระบบเทคโนโลยี</p>
+    <p class="font-kanit text-sm">@2026 | งานระบบเทคโนโลยีศูนย์การศึกษาพิเศษ ประจำจังหวัดอุดรธานี</p>
    </footer><!-- Modals --> <!-- Admin Login Modal -->
    <div id="adminLoginModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
     <div class="bg-white rounded-2xl w-full max-w-md p-6 fade-in">
@@ -168,14 +168,14 @@
     </div>
    </div><!-- Booking Modal -->
    <div id="bookingModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4 overflow-auto">
-    <div class="bg-white rounded-2xl w-full max-w-2xl p-6 fade-in my-4">
-     <div class="flex justify-between items-center mb-6">
+    <div class="bg-white rounded-2xl w-full max-w-2xl fade-in my-4 flex flex-col max-h-[90vh]">
+     <div class="flex justify-between items-center mb-6 p-6 border-b border-gray-200 sticky top-0 bg-white rounded-t-2xl">
       <h3 class="text-xl font-sarabun font-bold text-gray-800 flex items-center gap-2"><span class="text-2xl">📝</span> จองรถยนต์</h3><button onclick="closeModal('bookingModal')" class="text-gray-400 hover:text-gray-600">
        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
        </svg></button>
      </div>
-     <form id="bookingForm" class="space-y-4">
+     <form id="bookingForm" class="space-y-4 overflow-y-auto flex-1 px-6 py-4">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
        <div><label class="block font-kanit text-gray-700 mb-1">ชื่อ-สกุลผู้จอง <span class="text-red-500">*</span></label> <input type="text" id="bookName" required class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-purple-500 focus:outline-none transition-all font-kanit" placeholder="กรอกชื่อ-สกุล">
        </div>
@@ -279,7 +279,7 @@
    <div id="satisfactionModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
     <div class="bg-white rounded-2xl w-full max-w-md p-6 fade-in">
      <div class="flex justify-between items-center mb-6">
-      <h3 class="text-xl font-sarabun font-bold text-gray-800 flex items-center gap-2"><span class="text-2xl">😊</span> ประเมินความพึงพอใจ</h3><button onclick="closeModal('satisfactionModal')" class="text-gray-400 hover:text-gray-600">
+      <h3 class="text-xl font-sarabun font-bold text-gray-800 flex items-center gap-2"><span class="text-2xl">แบบประเมินความพึงพอใจ</span></h3><button onclick="closeModal('satisfactionModal')" class="text-gray-400 hover:text-gray-600">
        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
        </svg></button>
@@ -300,7 +300,7 @@
    <div id="statsModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4 overflow-auto">
     <div class="bg-white rounded-2xl w-full max-w-4xl p-6 fade-in my-4">
      <div class="flex justify-between items-center mb-6">
-      <h3 class="text-xl font-sarabun font-bold text-gray-800 flex items-center gap-2"><span class="text-2xl">📊</span> สถิติการใช้รถยนต์</h3><button onclick="closeModal('statsModal')" class="text-gray-400 hover:text-gray-600">
+      <h3 class="text-xl font-sarabun font-bold text-gray-800 flex items-center gap-2"><span class="text-2xl">📊</span> สถิตการใช้รถยนต์</h3><button onclick="closeModal('statsModal')" class="text-gray-400 hover:text-gray-600">
        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
        </svg></button>
@@ -342,7 +342,7 @@
     // Configuration
     const CONFIG = {
       SHEET_ID: '17VvL2FMHK2fBcYX2QcY_LhO9n0ps-UNlLOyfhwjaPvY',
-      APP_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbwpNEvLJ8mbr6Q4PMxNQoDm5nfgqRGm-O7YvvktDbHMWJAv6GemrbFAyiSHGNu8vPsg0Q/exec'
+      APP_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbwpNEvLJ8mbr6Q4PMxNQoDm5nfgqRGm-O7YvvktDbHMWJAv6GemrbFAyiSHGNu8vPsg0Q/exec/exec'
     };
 
     const CARS = [
@@ -1181,5 +1181,5 @@
       });
     });
   </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9c1360b3b51ad02a',t:'MTc2ODk2MjUwMi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9c1d550183cdd03c',t:'MTc2OTA2Njg4MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
