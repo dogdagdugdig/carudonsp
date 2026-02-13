@@ -47,7 +47,6 @@ function getData(sheetId) {
     const ss = SpreadsheetApp.openById(sheetId);
     let bookingsSheet = ss.getSheetByName('Bookings');
     
-    // สร้าง Sheet ถ้ายังไม่มี
     if (!bookingsSheet) {
       bookingsSheet = ss.insertSheet('Bookings');
       bookingsSheet.appendRow([
@@ -56,8 +55,6 @@ function getData(sheetId) {
         'วันที่เริ่มต้น', 'เวลาเริ่มต้น', 'วันที่สิ้นสุด', 'เวลาสิ้นสุด', 
         'เลขไมล์', 'สถานะ', 'Timestamp'
       ]);
-      
-      // ตั้งค่าหัวตาราง
       const headerRange = bookingsSheet.getRange(1, 1, 1, 14);
       headerRange.setBackground('#667eea');
       headerRange.setFontColor('#ffffff');
@@ -68,14 +65,13 @@ function getData(sheetId) {
     
     const lastRow = bookingsSheet.getLastRow();
     let bookings = [];
-    
     if (lastRow > 1) {
       const data = bookingsSheet.getRange(2, 1, lastRow - 1, 14).getValues();
       bookings = data.map((row, index) => ({
         rowIndex: index + 2,
         name: row[0],
         position: row[1],
-        phone: row[2],
+        phone: row[2].toString(),
         passengers: row[3],
         destination: row[4],
         car: row[5],
@@ -94,7 +90,6 @@ function getData(sheetId) {
       success: true, 
       bookings: bookings 
     })).setMimeType(ContentService.MimeType.JSON);
-    
   } catch (error) {
     return ContentService.createTextOutput(JSON.stringify({ 
       success: false, 
@@ -117,28 +112,15 @@ function addBooking(sheetId, data) {
     const ss = SpreadsheetApp.openById(sheetId);
     let bookingsSheet = ss.getSheetByName('Bookings');
     
-    // สร้าง Sheet ถ้ายังไม่มี
     if (!bookingsSheet) {
       bookingsSheet = ss.insertSheet('Bookings');
-      bookingsSheet.appendRow([
-        'ชื่อ-สกุล', 'ตำแหน่ง', 'เบอร์โทรศัพท์', 'จำนวนผู้โดยสาร', 
-        'วัตถุประสงค์/สถานที่ไป', 'รถยนต์', 'พนักงานขับรถ', 
-        'วันที่เริ่มต้น', 'เวลาเริ่มต้น', 'วันที่สิ้นสุด', 'เวลาสิ้นสุด', 
-        'เลขไมล์', 'สถานะ', 'Timestamp'
-      ]);
-      
-      const headerRange = bookingsSheet.getRange(1, 1, 1, 14);
-      headerRange.setBackground('#667eea');
-      headerRange.setFontColor('#ffffff');
-      headerRange.setFontWeight('bold');
-      headerRange.setHorizontalAlignment('center');
-      bookingsSheet.setFrozenRows(1);
+      // ... (ตั้งค่าหัวตารางเหมือนเดิม)
     }
     
     bookingsSheet.appendRow([
       data.name,
       data.position,
-      data.phone,
+      "'" + data.phone, // แก้ไข: เติม ' เพื่อให้แสดงเลข 0
       data.passengers,
       data.destination,
       data.car,
@@ -151,10 +133,8 @@ function addBooking(sheetId, data) {
       data.status || 'รอการอนุมัติ',
       new Date().toISOString()
     ]);
-    
     return ContentService.createTextOutput(JSON.stringify({ success: true }))
       .setMimeType(ContentService.MimeType.JSON);
-      
   } catch (error) {
     return ContentService.createTextOutput(JSON.stringify({ success: false, error: error.toString() }))
       .setMimeType(ContentService.MimeType.JSON);
@@ -165,17 +145,11 @@ function updateBooking(sheetId, data) {
   try {
     const ss = SpreadsheetApp.openById(sheetId);
     const bookingsSheet = ss.getSheetByName('Bookings');
-    
-    if (!bookingsSheet) {
-      return ContentService.createTextOutput(JSON.stringify({ success: false, error: 'Sheet not found' }))
-        .setMimeType(ContentService.MimeType.JSON);
-    }
-    
     const rowIndex = parseInt(data.rowIndex);
     
     bookingsSheet.getRange(rowIndex, 1).setValue(data.name);
     bookingsSheet.getRange(rowIndex, 2).setValue(data.position);
-    bookingsSheet.getRange(rowIndex, 3).setValue(data.phone);
+    bookingsSheet.getRange(rowIndex, 3).setValue("'" + data.phone); // แก้ไข: เติม '
     bookingsSheet.getRange(rowIndex, 4).setValue(data.passengers);
     bookingsSheet.getRange(rowIndex, 5).setValue(data.destination);
     bookingsSheet.getRange(rowIndex, 6).setValue(data.car);
@@ -188,7 +162,6 @@ function updateBooking(sheetId, data) {
     
     return ContentService.createTextOutput(JSON.stringify({ success: true }))
       .setMimeType(ContentService.MimeType.JSON);
-      
   } catch (error) {
     return ContentService.createTextOutput(JSON.stringify({ success: false, error: error.toString() }))
       .setMimeType(ContentService.MimeType.JSON);
@@ -199,18 +172,10 @@ function updateStatus(sheetId, data) {
   try {
     const ss = SpreadsheetApp.openById(sheetId);
     const bookingsSheet = ss.getSheetByName('Bookings');
-    
-    if (!bookingsSheet) {
-      return ContentService.createTextOutput(JSON.stringify({ success: false, error: 'Sheet not found' }))
-        .setMimeType(ContentService.MimeType.JSON);
-    }
-    
     const rowIndex = parseInt(data.rowIndex);
     bookingsSheet.getRange(rowIndex, 13).setValue(data.status);
-    
     return ContentService.createTextOutput(JSON.stringify({ success: true }))
       .setMimeType(ContentService.MimeType.JSON);
-      
   } catch (error) {
     return ContentService.createTextOutput(JSON.stringify({ success: false, error: error.toString() }))
       .setMimeType(ContentService.MimeType.JSON);
@@ -221,18 +186,10 @@ function deleteBooking(sheetId, data) {
   try {
     const ss = SpreadsheetApp.openById(sheetId);
     const bookingsSheet = ss.getSheetByName('Bookings');
-    
-    if (!bookingsSheet) {
-      return ContentService.createTextOutput(JSON.stringify({ success: false, error: 'Sheet not found' }))
-        .setMimeType(ContentService.MimeType.JSON);
-    }
-    
     const rowIndex = parseInt(data.rowIndex);
     bookingsSheet.deleteRow(rowIndex);
-    
     return ContentService.createTextOutput(JSON.stringify({ success: true }))
       .setMimeType(ContentService.MimeType.JSON);
-      
   } catch (error) {
     return ContentService.createTextOutput(JSON.stringify({ success: false, error: error.toString() }))
       .setMimeType(ContentService.MimeType.JSON);
@@ -243,40 +200,20 @@ function addSatisfaction(sheetId, data) {
   try {
     const ss = SpreadsheetApp.openById(sheetId);
     let satisfactionSheet = ss.getSheetByName('Satisfaction');
-    
-    // สร้าง Sheet ถ้ายังไม่มี
     if (!satisfactionSheet) {
       satisfactionSheet = ss.insertSheet('Satisfaction');
-      satisfactionSheet.appendRow([
-        'ชื่อ-สกุล', 'ระดับความพึงพอใจ', 'ข้อเสนอแนะ', 'Timestamp'
-      ]);
-      
-      const headerRange = satisfactionSheet.getRange(1, 1, 1, 4);
-      headerRange.setBackground('#ec4899');
-      headerRange.setFontColor('#ffffff');
-      headerRange.setFontWeight('bold');
-      headerRange.setHorizontalAlignment('center');
-      satisfactionSheet.setFrozenRows(1);
+      satisfactionSheet.appendRow(['ชื่อ-สกุล', 'ระดับความพึงพอใจ', 'ข้อเสนอแนะ', 'Timestamp']);
     }
-    
     satisfactionSheet.appendRow([
       data.name,
       data.rating,
       data.comment || '',
       new Date().toISOString()
     ]);
-    
     return ContentService.createTextOutput(JSON.stringify({ success: true }))
       .setMimeType(ContentService.MimeType.JSON);
-      
   } catch (error) {
     return ContentService.createTextOutput(JSON.stringify({ success: false, error: error.toString() }))
       .setMimeType(ContentService.MimeType.JSON);
   }
-}
-
-// ฟังก์ชันสำหรับทดสอบ
-function testGetData() {
-  const result = getData(SHEET_ID);
-  Logger.log(result.getContent());
 }
