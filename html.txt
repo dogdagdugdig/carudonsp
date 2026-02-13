@@ -482,26 +482,34 @@
     }
 
     function formatTime(timeValue) {
-      if (!timeValue) return '-';
-      
-      if (typeof timeValue === 'string' && timeValue.includes('T')) {
-        try {
-          const date = new Date(timeValue);
-          const hours = date.getUTCHours().toString().padStart(2, '0');
-          const minutes = date.getUTCMinutes().toString().padStart(2, '0');
-          return `${hours}.${minutes}`;
-        } catch (e) {
-          return timeValue;
-        }
-      }
-      
-      if (typeof timeValue === 'string' && timeValue.includes(':')) {
-        const [hours, minutes] = timeValue.split(':');
-        return `${hours}.${minutes}`;
-      }
-      
+  if (!timeValue) return '-';
+  
+  let hours, minutes;
+  
+  // ตรวจสอบว่าเป็น ISO String (มี 'T')
+  if (typeof timeValue === 'string' && timeValue.includes('T')) {
+    try {
+      const date = new Date(timeValue);
+      // ใช้เวลาท้องถิ่น (Local Time) ของเบราว์เซอร์ (ประเทศไทย)
+      hours = date.getHours().toString().padStart(2, '0');
+      minutes = date.getMinutes().toString().padStart(2, '0');
+    } catch (e) {
       return timeValue;
     }
+  } 
+  // ตรวจสอบว่าเป็นรูปแบบ "HH:mm" จาก input type="time"
+  else if (typeof timeValue === 'string' && timeValue.includes(':')) {
+    const parts = timeValue.split(':');
+    hours = parts[0].padStart(2, '0');
+    minutes = parts[1].padStart(2, '0');
+  } 
+  else {
+    return timeValue;
+  }
+  
+  // คืนค่ารูปแบบ "14.30 น."
+  return `${hours}.${minutes} น.`;
+}
 
     function formatDate(dateValue) {
       if (!dateValue) return '-';
